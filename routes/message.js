@@ -1,35 +1,39 @@
-const { v4 } = require("uuid");
 const { Router } = require("express");
+const { param, validationResult } = require("express-validator");
+const passport = require("passport");
+
+const messageController = require("../controllers/messageController");
+
 const router = Router();
 
-router.get("/", (req, res) => {
-  return res.send(Object.values(req.context.models.messages));
-});
+router.use(passport.authenticate("jwt", { session: false }));
 
-router.get("/:messageId", (req, res) => {
-  return res.send(req.context.models.messages[req.params.messageId]);
-});
+const sendValidationResults = (req, res, next) => {
+  const validations = validationResult(req);
+  if (!validations.isEmpty()) {
+    res.status(400).json({
+      errors: validations.array(),
+    });
+  }
+  next();
+};
 
-router.post("/", (req, res) => {
-  const id = v4();
-  const message = {
-    id,
-    text: req.body.text,
-    userId: req.context.me.id,
-  };
+router.use(
+  "/:id",
+  param("id").isNumeric().withMessage("Message Id should be a number"),
+  sendValidationResults
+);
 
-  req.context.models.messages[id] = message;
+router.post("/", messageController.createMessage);
 
-  return res.send(message);
-});
+router.get("/:id", messageController.getUser);
 
-router.delete("/:messageId", (req, res) => {
-  const { [req.params.messageId]: message, ...otherMessages } =
-    req.context.models.messages;
+router.put("/:id", messageController.updateUser);
 
-  req.context.models.messages = otherMessages;
+router.delete("/:id", messageController.deleteUser);
 
-  return res.send(message);
-});
+router.get("{userId=:userId}", messageController.getAllConversationsByUserId);
+
+router.get("/", messageController.getAllMessages);
 
 module.exports = router;

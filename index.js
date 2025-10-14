@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -50,8 +51,10 @@ app.use((req, res, next) => {
 
 app.use("/session", routes.session);
 app.use("/users", routes.user);
-app.use("/messages", routes.message);
+// app.use("/messages", routes.message);
 app.use("/auth", authRoutes);
+app.use("/conversations", routes.conversation);
+app.use("/messages", routes.message);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

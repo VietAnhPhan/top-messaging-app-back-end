@@ -80,7 +80,7 @@ router.post("/login", (req, res, next) => {
       });
     }
     const token = jwt.sign(user, "jwt_secret");
-    return res.json({ userId: user.id, token });
+    return res.json({ username: user.username, token });
   })(req, res);
 });
 

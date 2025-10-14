@@ -14,67 +14,55 @@ async function getUser(req, res) {
   return res.json({ user });
 }
 
-async function getAllUser(req, res) {
-  if (
-    req.query.username &&
-    req.query.username != "" &&
-    req.query.search &&
-    req.query.search == "true"
-  ) {
-    const User = await prisma.user.findMany({
+async function getAllConversationsByUserId(req, res, next) {
+  if (req.query.userId && req.query.userId !== "") {
+    const userId = Number(req.query.userId);
+    const conversations = await prisma.conversation.findMany({
       where: {
-        username: { startsWith: req.query.username },
+        userIds: {
+          has: userId,
+        },
         isActive: true,
       },
-    });
-    return res.json(User);
-  }
-
-  if (req.query.username && req.query.username != "") {
-    const User = await prisma.user.findFirst({
-      where: {
-        username: req.query.username,
-        isActive: true,
+      include: {
+        messages: {
+          take: 1,
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+          },
+        },
       },
     });
-    return res.json(User);
+    return res.json(conversations);
+  } else {
+    next();
   }
+}
 
-  const users = await prisma.user.findMany({
+async function getAllConversations(req, res) {
+  const conversations = await prisma.conversation.findMany({
     where: {
       isActive: true,
     },
-    orderBy: {
-      created_at: "desc",
-    },
   });
 
-  return res.json(users);
+  return res.json(conversations);
 }
 
-async function createUser(req, res, next) {
+async function createConversation(req, res, next) {
   try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const userIds = JSON.parse("[" + req.body.userIds + "]");
 
-    const user = {
-      name: req.body.name,
-      username: req.body.username,
-      email: req.body.email,
-      password: hashedPassword,
-      isAdmin: req.body.isAdmin ? true : false,
-    };
-
-    const User = await prisma.user.create({
-      data: user,
+    const Conversation = await prisma.conversation.create({
+      data: {
+        userIds: userIds,
+      },
     });
 
-    const userAuth = {
-      username: req.body.username,
-      password: req.body.password,
-    };
-
-    const token = jwt.sign(userAuth, "jwt_secret");
-    return res.json({ userId: User.id, token });
+    return res.json(Conversation);
   } catch (err) {
     next(err);
   }
@@ -131,8 +119,9 @@ async function deleteUser(req, res, next) {
 
 module.exports = {
   getUser,
-  getAllUser,
-  createUser,
+  getAllConversations,
+  getAllConversationsByUserId,
+  createConversation,
   updateUser,
   deleteUser,
 };
