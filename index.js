@@ -51,10 +51,10 @@ app.use((req, res, next) => {
 
 app.use("/session", routes.session);
 app.use("/users", routes.user);
-// app.use("/messages", routes.message);
 app.use("/auth", authRoutes);
 app.use("/conversations", routes.conversation);
 app.use("/messages", routes.message);
+app.use("/chatmembers", routes.chatMember);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

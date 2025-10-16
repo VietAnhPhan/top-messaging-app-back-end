@@ -4,16 +4,6 @@ const prisma = new PrismaClient();
 
 const jwt = require("jsonwebtoken");
 
-async function getUser(req, res) {
-  const user = await prisma.user.findFirst({
-    where: {
-      id: Number(req.params.id),
-    },
-  });
-
-  return res.json({ user });
-}
-
 async function getAllConversationsByUserId(req, res, next) {
   if (req.query.userId && req.query.userId !== "") {
     const userId = Number(req.query.userId);
@@ -26,7 +16,7 @@ async function getAllConversationsByUserId(req, res, next) {
       },
       include: {
         messages: {
-          take: 1,
+          // take: 1,
           orderBy: {
             createdAt: "desc",
           },
@@ -34,8 +24,96 @@ async function getAllConversationsByUserId(req, res, next) {
             user: true,
           },
         },
+        ChatMember: {
+          where: {
+            NOT: {
+              userId: userId,
+            },
+          },
+          include: {
+            user: true,
+          },
+        },
       },
     });
+
+    const conversationsData = conversations.filter(
+      (conversation) => conversation.messages.length > 0
+    );
+    return res.json(conversationsData);
+  } else {
+    next();
+  }
+}
+
+async function getCurrentConversation(req, res, next) {
+  if (req.query.userIds && req.query.userIds !== "") {
+    const userIds = JSON.parse("[" + req.query.userIds + "]");
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        userIds: {
+          hasEvery: userIds,
+        },
+        isActive: true,
+      },
+      include: {
+        messages: {
+          include: {
+            user: true,
+          },
+        },
+        ChatMember: {
+          where: {
+            NOT: {
+              userId: req.user.id,
+            },
+          },
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return res.json(conversation);
+  } else {
+    next();
+  }
+}
+
+async function getAllByUserIdsAndFriendId(req, res, next) {
+  if (
+    req.query.userIds &&
+    req.query.userIds !== "" &&
+    req.query.friendId &&
+    req.query.friendId !== ""
+  ) {
+    const userIds = JSON.parse("[" + req.query.userIds + "]");
+    const conversations = await prisma.conversation.findFirst({
+      where: {
+        userIds: {
+          hasEvery: userIds,
+        },
+        isActive: true,
+      },
+      include: {
+        messages: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    const friendUser = await prisma.user.findFirst({
+      where: {
+        id: Number(req.query.friendId),
+        isActive: true,
+      },
+    });
+
+    conversations.friend = friendUser;
+
     return res.json(conversations);
   } else {
     next();
@@ -68,60 +146,10 @@ async function createConversation(req, res, next) {
   }
 }
 
-async function updateUser(req, res, next) {
-  try {
-    req.params.id = parseInt(req.params.id);
-
-    let user = {};
-    for (const [key, value] of Object.entries(req.body)) {
-      if (key === "password") {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        user.password = hashedPassword;
-      } else if (value === "") {
-        continue;
-      } else {
-        user[key] = value;
-      }
-    }
-
-    await prisma.user.update({
-      where: {
-        id: req.params.id,
-      },
-      data: user,
-    });
-
-    return res.json({ user });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function deleteUser(req, res, next) {
-  const id = Number(req.params.id);
-
-  const user = await prisma.user.update({
-    where: {
-      id: id,
-      AND: {
-        isActive: true,
-      },
-    },
-    data: {
-      isActive: false,
-    },
-  });
-
-  return res.json({
-    user,
-  });
-}
-
 module.exports = {
-  getUser,
-  getAllConversations,
   getAllConversationsByUserId,
+  getAllConversations,
+  getAllByUserIdsAndFriendId,
+  getCurrentConversation,
   createConversation,
-  updateUser,
-  deleteUser,
 };

@@ -26,16 +26,17 @@ router.use(
 
 router.post("/", conversationController.createConversation);
 
-router.get("/:id", conversationController.getUser);
-
-router.put("/:id", conversationController.updateUser);
-
-router.delete("/:id", conversationController.deleteUser);
-
 router.get(
   "{userId=:userId}",
   conversationController.getAllConversationsByUserId
 );
+
+router.get(
+  "{userIds=:userIds&friendId=:friendId}",
+  conversationController.getAllByUserIdsAndFriendId
+);
+
+router.get("{userIds=:userIds}", conversationController.getCurrentConversation);
 
 router.get("/", conversationController.getAllConversations);
 
