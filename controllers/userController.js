@@ -91,6 +91,8 @@ async function updateUser(req, res, next) {
         user.password = hashedPassword;
       } else if (value === "") {
         continue;
+      } else if (key === "uploaded_avatar") {
+        continue;
       } else {
         user[key] = value;
       }

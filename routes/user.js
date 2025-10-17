@@ -3,6 +3,7 @@ const { param, validationResult } = require("express-validator");
 const passport = require("passport");
 
 const userController = require("../controllers/userController");
+const multer = require("multer");
 
 const router = Router();
 
@@ -18,6 +19,10 @@ const sendValidationResults = (req, res, next) => {
   next();
 };
 
+const storage = multer.memoryStorage();
+
+const upload = multer({ storage: storage });
+
 router.use(
   "/:id",
   param("id").isNumeric().withMessage("User Id should be a number"),
@@ -26,7 +31,7 @@ router.use(
 
 router.get("/:id", userController.getUser);
 
-router.put("/:id", userController.updateUser);
+router.put("/:id", upload.single("uploaded_avatar"), userController.updateUser);
 
 router.delete("/:id", userController.deleteUser);
 
