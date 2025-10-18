@@ -55,6 +55,7 @@ model Message {
   userId         Int
   createdAt      DateTime     @default(now())
   isActive       Boolean      @default(true)
+  Media          Media[]
 }
 
 model ChatMember {
@@ -67,4 +68,20 @@ model ChatMember {
   isActive       Boolean      @default(true)
 
   @@unique([conversationId, userId])
+}
+
+model Media {
+  id        Int       @id @default(autoincrement())
+  message   Message   @relation(fields: [messageId], references: [id])
+  messageId Int
+  filePath  String
+  type      MediaType
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+}
+
+enum MediaType {
+  image
+  video
+  audio
 }

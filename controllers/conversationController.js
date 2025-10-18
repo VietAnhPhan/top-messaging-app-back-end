@@ -58,8 +58,29 @@ async function getCurrentConversation(req, res, next) {
       },
       include: {
         messages: {
+          where: {
+            isActive: true,
+
+            AND: {
+              OR: [
+                {
+                  NOT: {
+                    message: "",
+                  },
+                },
+                {
+                  Media: {
+                    some: {
+                      isActive: true,
+                    },
+                  },
+                },
+              ],
+            },
+          },
           include: {
             user: true,
+            Media: true,
           },
         },
         ChatMember: {
@@ -98,8 +119,28 @@ async function getAllByUserIdsAndFriendId(req, res, next) {
       },
       include: {
         messages: {
+          where: {
+            isActive: true,
+            AND: {
+              OR: [
+                {
+                  NOT: {
+                    message: "",
+                  },
+                },
+                {
+                  Media: {
+                    some: {
+                      isActive: true,
+                    },
+                  },
+                },
+              ],
+            },
+          },
           include: {
             user: true,
+            Media: true,
           },
         },
       },

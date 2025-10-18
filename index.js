@@ -57,8 +57,8 @@ app.use("/messages", routes.message);
 app.use("/chatmembers", routes.chatMember);
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ errors: err });
+  console.log(err);
+  res.status(500).json(err);
 });
 
 app.get("/", (req, res) => {

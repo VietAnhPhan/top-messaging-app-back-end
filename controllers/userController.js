@@ -86,7 +86,7 @@ async function updateUser(req, res, next) {
 
     let user = {};
     for (const [key, value] of Object.entries(req.body)) {
-      if (key === "password") {
+      if (key === "password" && value !== "") {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         user.password = hashedPassword;
       } else if (value === "") {
@@ -106,6 +106,31 @@ async function updateUser(req, res, next) {
     });
 
     return res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function resetPassword(req, res, next) {
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+    let hashedPassword = "";
+
+    if (password !== "") {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    const User = await prisma.user.update({
+      where: {
+        email: email,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return res.json(User);
   } catch (err) {
     next(err);
   }
@@ -137,4 +162,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  resetPassword,
 };

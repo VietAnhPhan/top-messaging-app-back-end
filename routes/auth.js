@@ -84,4 +84,33 @@ router.post("/login", (req, res, next) => {
   })(req, res);
 });
 
+router.put(
+  "/password",
+  body("email")
+    .isEmail()
+    .notEmpty()
+    .withMessage("Email should be in correct format and not empty."),
+  body("password")
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage("Password must have at least 8 letters"),
+  body("repeat_password")
+    .custom((value, { req }) => {
+      return value === req.body.password;
+    })
+    .withMessage("Repeat password must match"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    
+    if (errors.array().length > 0) {
+      return res.json({
+        title: "Fail to update password",
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
+  userController.resetPassword
+);
+
 module.exports = router;

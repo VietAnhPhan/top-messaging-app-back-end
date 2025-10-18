@@ -47,6 +47,20 @@ async function createMessage(req, res, next) {
     const conversationId = Number(req.body.conversationId);
     const message = req.body.message;
 
+    let filePath = "";
+    let fileType = "";
+    let hasMedia = false;
+
+    if (req.body.filePath && req.body.fileType) {
+      filePath = req.body.filePath;
+      fileType = req.body.fileType;
+      hasMedia = true;
+    }
+
+    if (message === "" && filePath === "" && fileType === "") {
+      return res.json(null);
+    }
+
     const Message = await prisma.message.create({
       data: {
         message: message,
@@ -54,6 +68,19 @@ async function createMessage(req, res, next) {
         conversationId: conversationId,
       },
     });
+
+    if (hasMedia) {
+      const Media = await prisma.media.create({
+        data: {
+          messageId: Message.id,
+          filePath: filePath,
+          type: fileType,
+        },
+      });
+      Message.Media = Media;
+    } else {
+      Message.Media = [];
+    }
 
     return res.json(Message);
   } catch (err) {
