@@ -16,6 +16,11 @@ async function getAllConversationsByUserId(req, res, next) {
       },
       include: {
         messages: {
+          where: {
+            NOT: {
+              message: "",
+            },
+          },
           // take: 1,
           orderBy: {
             createdAt: "desc",

@@ -15,19 +15,25 @@ datasource db {
 }
 
 model User {
-  id         Int          @id @default(autoincrement())
-  name       String
-  username   String       @unique
-  email      String       @unique
-  password   String
-  isAdmin    Boolean      @default(false)
-  about      String?
-  phone      String?      @unique
-  created_at DateTime     @default(now())
-  isActive   Boolean      @default(true)
-  messages   Message[]
-  ChatMember ChatMember[]
-  avatarPath String?
+  id           Int             @id @default(autoincrement())
+  name         String
+  username     String          @unique
+  email        String          @unique
+  password     String
+  isAdmin      Boolean         @default(false)
+  about        String?
+  phone        String?         @unique
+  created_at   DateTime        @default(now())
+  isActive     Boolean         @default(true)
+  messages     Message[]
+  ChatMember   ChatMember[]
+  avatarPath   String?
+  friend       Friend[]        @relation("FriendUser")
+  loginUser    Friend[]        @relation("LoginUser")
+  sender       FriendRequest[] @relation("Sender")
+  receiver     FriendRequest[] @relation("Receiver")
+  Conversation Conversation[]
+  uuid         String?         @default(ulid())
 }
 
 model Session {
@@ -40,10 +46,13 @@ model Session {
 model Conversation {
   id         Int          @id @default(autoincrement())
   userIds    Int[]
-  createdAt  DateTime     @default(now())
-  isActive   Boolean      @default(true)
   messages   Message[]
   ChatMember ChatMember[]
+  initiator  User?        @relation(fields: [userId], references: [id])
+  userId     Int?
+  createdAt  DateTime     @default(now())
+  isActive   Boolean      @default(true)
+  uuid       String?      @default(ulid())
 }
 
 model Message {
@@ -84,4 +93,36 @@ enum MediaType {
   image
   video
   audio
+}
+
+model FriendRequest {
+  id         Int      @id @default(autoincrement())
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
+  receiverId Int
+  isAccepted Boolean  @default(false)
+  createdAt  DateTime
+  isActived  Boolean  @default(true)
+
+  @@unique([senderId, receiverId])
+}
+
+model Friend {
+  id          Int          @id @default(autoincrement())
+  friend      User         @relation("FriendUser", fields: [friendId], references: [id])
+  friendId    Int
+  loginUser   User         @relation("LoginUser", fields: [loginuserId], references: [id])
+  loginuserId Int
+  status      FriendStatus @default(friends)
+  createdAt   DateTime     @default(now())
+  isActive    Boolean      @default(true)
+
+  @@unique([loginuserId, friendId])
+}
+
+enum FriendStatus {
+  pending
+  friends
+  stranger
 }
