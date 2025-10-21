@@ -16,14 +16,24 @@ async function getUser(req, res) {
 
 async function getAllUser(req, res) {
   if (
-    req.query.username &&
-    req.query.username != "" &&
+    req.query.contact &&
+    req.query.contact != "" &&
     req.query.search &&
     req.query.search == "true"
   ) {
     const User = await prisma.user.findMany({
       where: {
-        username: { startsWith: req.query.username },
+        OR: [
+          {
+            username: { startsWith: req.query.contact, mode: "insensitive" },
+          },
+          {
+            name: {
+              contains: req.query.contact.toLowerCase(),
+              mode: "insensitive",
+            },
+          },
+        ],
         isActive: true,
       },
     });

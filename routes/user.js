@@ -35,6 +35,6 @@ router.put("/:id", upload.single("uploaded_avatar"), userController.updateUser);
 
 router.delete("/:id", userController.deleteUser);
 
-router.get("{username=:username&search=true}", userController.getAllUser);
+router.get("{contact&search=true}", userController.getAllUser);
 
 module.exports = router;
