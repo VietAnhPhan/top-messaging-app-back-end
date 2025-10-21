@@ -96,14 +96,14 @@ enum MediaType {
 }
 
 model FriendRequest {
-  id         Int      @id @default(autoincrement())
-  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  id         Int                 @id @default(autoincrement())
+  sender     User                @relation("Sender", fields: [senderId], references: [id])
   senderId   Int
-  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
+  receiver   User                @relation("Receiver", fields: [receiverId], references: [id])
   receiverId Int
-  isAccepted Boolean  @default(false)
-  createdAt  DateTime
-  isActived  Boolean  @default(true)
+  createdAt  DateTime            @default(now())
+  isActive   Boolean             @default(true)
+  status     FriendRequestStatus @default(pending)
 
   @@unique([senderId, receiverId])
 }
@@ -125,4 +125,10 @@ enum FriendStatus {
   pending
   friends
   stranger
+}
+
+enum FriendRequestStatus {
+  pending
+  accepted
+  rejected
 }

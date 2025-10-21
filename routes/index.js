@@ -3,6 +3,7 @@ const user = require("./user");
 const message = require("./message");
 const conversation = require("./conversation");
 const chatMember = require("./chatMember");
+const friendRequest = require("./friendRequest");
 
 module.exports = {
   session,
@@ -10,4 +11,5 @@ module.exports = {
   message,
   conversation,
   chatMember,
+  friendRequest,
 };
