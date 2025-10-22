@@ -11,10 +11,10 @@ async function getUser(req, res) {
     },
   });
 
-  return res.json({ user });
+  return res.json(user);
 }
 
-async function getAllUser(req, res) {
+async function searchUser(req, res, next) {
   if (
     req.query.contact &&
     req.query.contact != "" &&
@@ -49,7 +49,39 @@ async function getAllUser(req, res) {
     });
     return res.json(User);
   }
+  next();
+}
 
+async function getChatUser(req, res, next) {
+  let conversationId = req.query.conversation_id;
+  let userId = req.query.auth_id;
+  if (!conversationId || conversationId === "" || !userId || userId === "") {
+    next();
+  } else {
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        isActive: true,
+        id: Number(conversationId),
+      },
+      include: {
+        ChatMember: {
+          where: {
+            NOT: {
+              userId: Number(userId),
+            },
+          },
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return res.json(conversation.ChatMember[0].user);
+  }
+}
+
+async function getAll(req, res) {
   const users = await prisma.user.findMany({
     where: {
       isActive: true,
@@ -167,10 +199,12 @@ async function deleteUser(req, res, next) {
 }
 
 module.exports = {
+  getAll,
   getUser,
-  getAllUser,
+  searchUser,
   createUser,
   updateUser,
   deleteUser,
   resetPassword,
+  getChatUser,
 };

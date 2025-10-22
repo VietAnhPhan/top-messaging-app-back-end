@@ -35,6 +35,10 @@ router.put("/:id", upload.single("uploaded_avatar"), userController.updateUser);
 
 router.delete("/:id", userController.deleteUser);
 
-router.get("{contact&search=true}", userController.getAllUser);
+router.get("{contact&search=true}", userController.searchUser);
+
+router.get("{conversation_id&auth_id}", userController.getChatUser);
+
+router.get("/", userController.getAll);
 
 module.exports = router;
