@@ -43,8 +43,43 @@ async function getAllMessages(req, res) {
 
 async function createMessage(req, res, next) {
   try {
-    const userId = Number(req.body.userId);
-    const conversationId = Number(req.body.conversationId);
+    const authId = Number(req.body.userId);
+    const chatUserId = Number(req.body.chatUserId);
+
+    let conversation = await prisma.conversation.findFirst({
+      where: {
+        isActive: true,
+        AND: {
+          userIds: {
+            hasEvery: [authId, chatUserId],
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      conversation = await prisma.conversation.create({
+        data: {
+          userIds: [authId, chatUserId],
+          initiatorId: authId,
+        },
+      });
+      const authMember = {
+        userId: req.user.id,
+        conversationId: conversation.id,
+      };
+
+      const chatMember = {
+        userId: chatUserId,
+        conversationId: conversation.id,
+      };
+
+      await prisma.chatMember.createMany({
+        data: [authMember, chatMember],
+      });
+    }
+
+    const conversationId = conversation.id;
     const message = req.body.message;
 
     let filePath = "";
@@ -64,7 +99,7 @@ async function createMessage(req, res, next) {
     const Message = await prisma.message.create({
       data: {
         message: message,
-        userId: userId,
+        userId: authId,
         conversationId: conversationId,
       },
     });
