@@ -44,15 +44,15 @@ model Session {
 }
 
 model Conversation {
-  id         Int          @id @default(autoincrement())
-  userIds    Int[]
-  messages   Message[]
-  ChatMember ChatMember[]
-  initiator  User?        @relation(fields: [userId], references: [id])
-  userId     Int?
-  createdAt  DateTime     @default(now())
-  isActive   Boolean      @default(true)
-  uuid       String?      @default(ulid())
+  id          Int          @id @default(autoincrement())
+  userIds     Int[]
+  messages    Message[]
+  ChatMember  ChatMember[]
+  initiator   User?        @relation(fields: [initiatorId], references: [id])
+  initiatorId Int?
+  createdAt   DateTime     @default(now())
+  isActive    Boolean      @default(true)
+  uuid        String?      @default(ulid())
 }
 
 model Message {
