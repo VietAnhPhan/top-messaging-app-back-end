@@ -116,7 +116,7 @@ async function createUser(req, res, next) {
     };
 
     const token = jwt.sign(userAuth, "jwt_secret");
-    return res.json({ userId: User.id, token });
+    return res.json({ username: User.username, token });
   } catch (err) {
     next(err);
   }
