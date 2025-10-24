@@ -36,6 +36,9 @@ async function getAllMessages(req, res) {
     where: {
       isActive: true,
     },
+    include: {
+      Media: true,
+    },
   });
 
   return res.json(messages);
@@ -112,7 +115,7 @@ async function createMessage(req, res, next) {
           type: fileType,
         },
       });
-      Message.Media = Media;
+      Message.Media = [Media];
     } else {
       Message.Media = [];
     }
