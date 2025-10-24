@@ -45,7 +45,7 @@ router.post(
     .trim()
     .isLength({ min: 8 })
     .withMessage("Password must have at least 8 letters"),
-  body("repeat_password")
+  body("repeatPassword")
     .custom((value, { req }) => {
       return value === req.body.password;
     })
