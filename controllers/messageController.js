@@ -107,6 +107,15 @@ async function createMessage(req, res, next) {
       },
     });
 
+    await prisma.conversation.update({
+      where: {
+        id: conversationId,
+      },
+      data: {
+        modifiedAt: new Date(),
+      },
+    });
+
     if (hasMedia) {
       const Media = await prisma.media.create({
         data: {

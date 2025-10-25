@@ -53,6 +53,7 @@ model Conversation {
   createdAt   DateTime     @default(now())
   isActive    Boolean      @default(true)
   uuid        String?      @default(ulid())
+  modifiedAt  DateTime?     @default(now())
 }
 
 model Message {

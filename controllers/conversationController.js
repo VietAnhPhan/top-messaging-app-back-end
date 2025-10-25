@@ -40,6 +40,9 @@ async function getAllConversationsByUserId(req, res, next) {
           },
         },
       },
+      orderBy: {
+        modifiedAt: "desc",
+      },
     });
 
     const conversationsData = conversations.filter(
