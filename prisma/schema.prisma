@@ -53,7 +53,7 @@ model Conversation {
   createdAt   DateTime     @default(now())
   isActive    Boolean      @default(true)
   uuid        String?      @default(ulid())
-  modifiedAt  DateTime?     @default(now())
+  modifiedAt  DateTime?    @default(now())
 }
 
 model Message {
@@ -66,6 +66,7 @@ model Message {
   createdAt      DateTime     @default(now())
   isActive       Boolean      @default(true)
   Media          Media[]
+  isSeen         Boolean      @default(false)
 }
 
 model ChatMember {
@@ -132,4 +133,5 @@ enum FriendRequestStatus {
   pending
   accepted
   rejected
+  cancel
 }

@@ -26,16 +26,21 @@ router.use(
 
 router.post("/", friendRequestController.create);
 
+router.patch("/:id{revoke}", friendRequestController.revokeInvitation);
+
+router.patch("/:id{reject}", friendRequestController.rejectInvitation);
+
 // router.get("/:id", messageController.getUser);
 
 // router.put("/:id", messageController.updateUser);
 
 // router.delete("/:id", messageController.deleteUser);
 
-router.get(
-  "{friend_request&sender_id}",
-  friendRequestController.getfriendRequest
-);
+router.get("{sent}", friendRequestController.getfriendRequest);
+
+router.get("{receiving}", friendRequestController.getReceivingInvitations);
+
+router.get("{chatUserId}", friendRequestController.getByChatUserId);
 
 router.get("/", friendRequestController.getAll);
 
