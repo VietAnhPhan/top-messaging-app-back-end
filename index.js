@@ -56,6 +56,7 @@ app.use("/conversations", routes.conversation);
 app.use("/messages", routes.message);
 app.use("/chatmembers", routes.chatMember);
 app.use("/friendrequests", routes.friendRequest);
+app.use("/friends", routes.friend);
 
 app.use((err, req, res, next) => {
   console.log(err);

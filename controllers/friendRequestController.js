@@ -1,16 +1,6 @@
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 
-// async function getUser(req, res) {
-//   const user = await prisma.user.findFirst({
-//     where: {
-//       id: Number(req.params.id),
-//     },
-//   });
-
-//   return res.json({ user });
-// }
-
 async function getfriendRequest(req, res, next) {
   if (req.query.sent && req.query.sent == "true") {
     const friendRequest = await prisma.friendRequest.findMany({
@@ -62,7 +52,12 @@ async function getByChatUserId(req, res, next) {
           },
         ],
         AND: {
-          status: "pending",
+          OR: [
+            { status: "pending" },
+            {
+              status: "accepted",
+            },
+          ],
         },
       },
     });
@@ -118,55 +113,6 @@ async function create(req, res, next) {
   }
 }
 
-// async function updateUser(req, res, next) {
-//   try {
-//     req.params.id = parseInt(req.params.id);
-
-//     let user = {};
-//     for (const [key, value] of Object.entries(req.body)) {
-//       if (key === "password") {
-//         const hashedPassword = await bcrypt.hash(req.body.password, 10);
-//         user.password = hashedPassword;
-//       } else if (value === "") {
-//         continue;
-//       } else {
-//         user[key] = value;
-//       }
-//     }
-
-//     await prisma.user.update({
-//       where: {
-//         id: req.params.id,
-//       },
-//       data: user,
-//     });
-
-//     return res.json({ user });
-//   } catch (err) {
-//     next(err);
-//   }
-// }
-
-// async function deleteUser(req, res, next) {
-//   const id = Number(req.params.id);
-
-//   const user = await prisma.user.update({
-//     where: {
-//       id: id,
-//       AND: {
-//         isActive: true,
-//       },
-//     },
-//     data: {
-//       isActive: false,
-//     },
-//   });
-
-//   return res.json({
-//     user,
-//   });
-// }
-
 async function revokeInvitation(req, res, next) {
   try {
     if (req.query.revoke && req.query.revoke === "true" && req.params.id) {
@@ -207,15 +153,165 @@ async function rejectInvitation(req, res, next) {
   }
 }
 
+async function acceptInvitation(req, res, next) {
+  try {
+    if (req.query.accept && req.query.accept === "true" && req.params.id) {
+      const invitation = await prisma.friendRequest.findFirst({
+        where: {
+          id: Number(req.params.id),
+        },
+      });
+
+      const friends = await prisma.friend.findMany({
+        where: {
+          OR: [
+            {
+              loginuserId: req.user.id,
+              friendId: invitation.senderId,
+            },
+            {
+              loginuserId: invitation.senderId,
+              friendId: req.user.id,
+            },
+          ],
+        },
+      });
+
+      if (friends.length == 2) {
+        await prisma.friend.updateMany({
+          where: {
+            OR: [
+              {
+                loginuserId: req.user.id,
+                friendId: Number(req.params.id),
+              },
+              {
+                loginuserId: Number(req.params.id),
+                friendId: req.user.id,
+              },
+            ],
+          },
+          data: {
+            status: "friends",
+          },
+        });
+      } else if (friends.length < 2) {
+        await prisma.friend.createMany({
+          data: [
+            {
+              loginuserId: req.user.id,
+              friendId: invitation.senderId,
+              status: "friends",
+            },
+            {
+              loginuserId: invitation.senderId,
+              friendId: req.user.id,
+              status: "friends",
+            },
+          ],
+        });
+      }
+
+      const acceptedInvitation = await prisma.friendRequest.update({
+        where: {
+          id: Number(req.params.id),
+        },
+        data: {
+          status: "accepted",
+        },
+      });
+
+      return res.json(acceptedInvitation);
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function unfriend(req, res, next) {
+  try {
+    if (
+      req.query.unfriend &&
+      req.query.unfriend === "true" &&
+      req.params.id &&
+      req.query.chatUserId &&
+      req.query.chatUserId !== ""
+    ) {
+      const acceptedInvitation = await prisma.friendRequest.findFirst({
+        where: {
+          id: Number(req.params.id),
+          status: "accepted",
+        },
+      });
+
+      if (!acceptedInvitation) {
+        return res.json(null);
+      }
+
+      const friends = await prisma.friend.findMany({
+        where: {
+          OR: [
+            {
+              loginuserId: req.user.id,
+              friendId: Number(req.query.chatUserId),
+            },
+            {
+              loginuserId: Number(req.query.chatUserId),
+              friendId: req.user.id,
+            },
+          ],
+        },
+      });
+
+      if (friends.length < 2) {
+        return res.json(nul);
+      }
+
+      await prisma.friend.updateMany({
+        where: {
+          OR: [
+            {
+              loginuserId: req.user.id,
+              friendId: Number(req.query.chatUserId),
+            },
+            {
+              loginuserId: Number(req.query.chatUserId),
+              friendId: req.user.id,
+            },
+          ],
+        },
+        data: {
+          status: "stranger",
+        },
+      });
+
+      const unfriendInvitation = await prisma.friendRequest.update({
+        where: {
+          id: Number(req.params.id),
+        },
+        data: {
+          status: "unfriend",
+        },
+      });
+
+      return res.json(unfriendInvitation);
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
-  // getUser,
   getAll,
   getfriendRequest,
   create,
-  // updateUser,
-  // deleteUser,
+
   revokeInvitation,
   getReceivingInvitations,
   getByChatUserId,
   rejectInvitation,
+  acceptInvitation,
+  unfriend,
 };

@@ -30,11 +30,9 @@ router.patch("/:id{revoke}", friendRequestController.revokeInvitation);
 
 router.patch("/:id{reject}", friendRequestController.rejectInvitation);
 
-// router.get("/:id", messageController.getUser);
+router.patch("/:id{accept}", friendRequestController.acceptInvitation);
 
-// router.put("/:id", messageController.updateUser);
-
-// router.delete("/:id", messageController.deleteUser);
+router.patch("/:id{unfriend&chatUserId}", friendRequestController.unfriend);
 
 router.get("{sent}", friendRequestController.getfriendRequest);
 

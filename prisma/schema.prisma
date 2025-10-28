@@ -134,4 +134,5 @@ enum FriendRequestStatus {
   accepted
   rejected
   cancel
+  unfriend
 }
