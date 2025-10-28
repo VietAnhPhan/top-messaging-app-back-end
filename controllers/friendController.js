@@ -9,9 +9,20 @@ async function getByAuthId(req, res, next) {
         where: {
           loginuserId: req.user.id,
         },
+        include: {
+          friend: true,
+        },
       });
 
-      return res.json(friends);
+      const friendList = friends.map((friend) => {
+        return {
+          id: friend.friend.id,
+          name: friend.friend.name,
+          avatarPath: friend.friend.avatarPath,
+        };
+      });
+
+      return res.json(friendList);
     }
     next();
   } catch (err) {

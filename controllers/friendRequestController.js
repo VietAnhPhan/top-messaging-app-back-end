@@ -28,7 +28,7 @@ async function getReceivingInvitations(req, res, next) {
         isActive: true,
       },
       include: {
-        receiver: true,
+        sender: true,
       },
     });
     return res.json(friendRequest);
