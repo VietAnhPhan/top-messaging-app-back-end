@@ -1,8 +1,4 @@
-const bcrypt = require("bcryptjs");
-const { PrismaClient } = require("../generated/prisma");
-const prisma = new PrismaClient();
-
-const jwt = require("jsonwebtoken");
+const { prisma } = require("../config/helpers");
 
 async function getchatMember(req, res) {
   const user = await prisma.chatMember.findFirst({

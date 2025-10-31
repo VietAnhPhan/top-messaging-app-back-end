@@ -1,11 +1,9 @@
-const { PrismaClient } = require("../generated/prisma");
-
-const primsa = new PrismaClient();
+const { prisma } = require("../config/helpers");
 
 async function getByAuthId(req, res, next) {
   try {
     if (req.query.auth && req.query.auth === "true") {
-      const friends = await primsa.friend.findMany({
+      const friends = await prisma.friend.findMany({
         where: {
           loginuserId: req.user.id,
         },

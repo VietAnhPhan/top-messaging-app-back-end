@@ -1,5 +1,4 @@
-const { PrismaClient } = require("../generated/prisma");
-const prisma = new PrismaClient();
+const { prisma } = require("../config/helpers");
 
 async function getfriendRequest(req, res, next) {
   if (req.query.sent && req.query.sent == "true") {

@@ -8,6 +8,10 @@ const session = require("express-session");
 const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
 
 const { PrismaClient } = require("./generated/prisma");
+const databaseUrl =
+  process.env.NODE_ENV === "production"
+    ? process.env.NEON_URL
+    : process.env.DATABASE_URL;
 
 const models = require("./models/index");
 const routes = require("./routes/index");
@@ -31,11 +35,20 @@ app.use(
     secret: "a santa at nasa",
     resave: true,
     saveUninitialized: true,
-    store: new PrismaSessionStore(new PrismaClient(), {
-      checkPeriod: 2 * 60 * 1000, //ms
-      dbRecordIdIsSessionId: true,
-      dbRecordIdFunction: undefined,
-    }),
+    store: new PrismaSessionStore(
+      new PrismaClient({
+        datasources: {
+          db: {
+            url: databaseUrl,
+          },
+        },
+      }),
+      {
+        checkPeriod: 2 * 60 * 1000, //ms
+        dbRecordIdIsSessionId: true,
+        dbRecordIdFunction: undefined,
+      }
+    ),
   })
 );
 
