@@ -76,7 +76,7 @@ async function createMessage(req, res, next) {
         conversationId: conversation.id,
       };
 
-      await prisma.chatMember.createMany({
+      const chatMembers = await prisma.chatMember.createMany({
         data: [authMember, chatMember],
       });
     }

@@ -6,6 +6,7 @@ async function getByAuthId(req, res, next) {
       const friends = await prisma.friend.findMany({
         where: {
           loginuserId: req.user.id,
+          status: "friends",
         },
         include: {
           friend: true,
@@ -17,6 +18,7 @@ async function getByAuthId(req, res, next) {
           id: friend.friend.id,
           name: friend.friend.name,
           avatarPath: friend.friend.avatarPath,
+          status: friend.status,
         };
       });
 

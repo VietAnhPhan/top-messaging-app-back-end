@@ -16,24 +16,43 @@ async function getAllConversationsByUserId(req, res, next) {
       include: {
         messages: {
           where: {
-            NOT: {
-              message: "",
+            AND: {
+              OR: [
+                {
+                  NOT: {
+                    message: "",
+                  },
+                },
+                {
+                  Media: {
+                    some: {
+                      isActive: true,
+                    },
+                  },
+                },
+              ],
             },
           },
+          // where: {
+          //   NOT: {
+          //     message: "",
+          //   },
+          // },
           // take: 1,
           orderBy: {
-            createdAt: "desc",
+            createdAt: "asc",
           },
           include: {
             user: true,
+            Media: true,
           },
         },
         ChatMember: {
-          where: {
-            NOT: {
-              userId: userId,
-            },
-          },
+          // where: {
+          //   NOT: {
+          //     userId: userId,
+          //   },
+          // },
           include: {
             user: true,
           },
@@ -91,11 +110,11 @@ async function getCurrentConversation(req, res, next) {
           },
         },
         ChatMember: {
-          where: {
-            NOT: {
-              userId: req.user.id,
-            },
-          },
+          // where: {
+          //   NOT: {
+          //     userId: req.user.id,
+          //   },
+          // },
           include: {
             user: true,
           },
